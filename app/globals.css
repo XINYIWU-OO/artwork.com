@@ -24,9 +24,9 @@ main { position: relative; z-index: 1; }
   position: fixed;
   inset: 0;
   z-index: 0;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  background-position: center top;
+  background-repeat: repeat-y;
+  background-size: 107vw auto;
   opacity: .9;
   pointer-events: none;
 }
@@ -47,8 +47,9 @@ main { position: relative; z-index: 1; }
   height: calc(var(--header-height) + var(--filter-height));
   background-color: #fffdfa;
   background-image: var(--drafting-bg);
-  background-position: center;
-  background-size: cover;
+  background-position: center top;
+  background-repeat: repeat-y;
+  background-size: 107vw auto;
   background-attachment: fixed;
   content: "";
   pointer-events: none;
@@ -62,8 +63,9 @@ main { position: relative; z-index: 1; }
   margin-left: 0;
   background-color: #fffdfa;
   background-image: var(--drafting-bg);
-  background-position: center;
-  background-size: cover;
+  background-position: center top;
+  background-repeat: repeat-y;
+  background-size: 107vw auto;
   background-attachment: fixed;
   backdrop-filter: none;
 }
@@ -281,8 +283,9 @@ main:not(.home-archive) .site-header,
 main:not(.home-archive) .filters {
   background-color: #fffdfa;
   background-image: var(--drafting-bg);
-  background-position: center;
-  background-size: cover;
+  background-position: center top;
+  background-repeat: repeat-y;
+  background-size: 107vw auto;
   background-attachment: fixed;
   backdrop-filter: none;
 }
@@ -941,8 +944,8 @@ main:not(.home-archive) .filters {
   .home-split-panel:first-child::after { right: -5.5px; }
   .home-split-media { height: min(48svh, 390px); }
   .drafting-paper-bg {
-    background-position: 12% center;
-    background-size: auto 100%;
+    background-position: center top;
+    background-size: 107vw auto;
     opacity: .72;
   }
   .project-flow--desktop { display: none; }
