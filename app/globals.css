@@ -456,7 +456,7 @@ main:not(.home-archive) .filters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 2.5vw;
-  min-height: calc(100svh - 7.2vh - var(--header-height) - var(--filter-height));
+  min-height: calc(100svh - var(--header-height) - var(--filter-height));
   width: 92.6vw;
   margin-left: -2.5vw;
   padding: 18px 1.3vw 0;
