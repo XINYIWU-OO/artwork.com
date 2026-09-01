@@ -705,6 +705,11 @@ main:not(.home-archive) .filters {
   overflow: hidden;
   background: #f0f0ed;
 }
+.project-media picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .project-media img {
   height: 100%;
   object-fit: cover;
@@ -908,10 +913,29 @@ main:not(.home-archive) .filters {
 
 @media (max-width: 760px) {
   :root { --header-height: 62px; --filter-height: 46px; }
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  main { max-width: 100%; }
   .site-header { padding: 0 18px; }
   .wordmark { font-size: 12px; }
-  .filters { grid-template-columns: repeat(6, max-content); }
+  .filters,
+  .home-archive .filters {
+    width: 100vw;
+    max-width: 100vw;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    overflow-y: hidden;
+    touch-action: pan-x;
+    scroll-snap-type: x proximity;
+  }
   .filters button { min-width: 0; min-height: 46px; padding: 0 19px; font-size: 10px; }
+  .filters button { scroll-snap-align: start; }
   .hero-interface { right: 18px; bottom: 18px; left: 18px; }
   .hero-images[data-count="4"] img {
     opacity: 0;
@@ -932,8 +956,7 @@ main:not(.home-archive) .filters {
   .home-archive .site-header { top: 0; }
   .home-archive .filters { top: var(--header-height); }
   .home-archive .wordmark { font-size: 17px; }
-  .home-archive .filters { grid-template-columns: repeat(6, max-content); }
-  .home-archive .filters button { min-width: 112px; }
+  .home-archive .filters button { min-width: max-content; padding-right: 22px; padding-left: 22px; }
   .home-split-hero {
     gap: 10px;
     min-height: calc(100svh - var(--header-height) - var(--filter-height));
@@ -950,6 +973,8 @@ main:not(.home-archive) .filters {
   .home-split-panel:first-child::after { right: -5.5px; }
   .home-split-media { height: min(48svh, 390px); }
   .drafting-paper-bg {
+    width: 100vw;
+    max-width: 100vw;
     background-image: var(--drafting-bg-mobile);
     background-position: center top;
     background-size: 107vw auto;

@@ -15,6 +15,15 @@ import {
 const assetUrl = (path: string) =>
   `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${path}`;
 
+const mobileAssetUrl = (path: string) => {
+  const extensionIndex = path.lastIndexOf(".");
+  const mobilePath = extensionIndex === -1
+    ? `${path}-mobile.webp`
+    : `${path.slice(0, extensionIndex)}-mobile.webp`;
+
+  return assetUrl(mobilePath);
+};
+
 const homeHeroSlides = [
   { image: homeHeroImages[0], mobileImage: "/portfolio-v2/work-cover-p1-mobile.webp", title: "Paper Embers (for my grandpa)", year: "2023", projectId: "words-memory" },
   { image: homeHeroImages[1], mobileImage: "/portfolio-v2/branch-01-mobile.webp", title: "Root Unbound", year: "2022", projectId: "the-branch" },
@@ -327,6 +336,8 @@ function ProjectCard({
   coverOverride?: string;
 }) {
   const archiveNumber = String(index + 1).padStart(3, "0");
+  const coverImage = coverOverride ?? project.images[0];
+  const loadImmediately = index < 3;
 
   return (
     <article className="project-card" aria-hidden={isClone || undefined}>
@@ -347,16 +358,24 @@ function ProjectCard({
                 <i />
               </span>
               <span className="project-media">
-                <img
-                  src={assetUrl(coverOverride ?? project.images[0])}
-                  alt={`${project.title} 项目封面`}
-                  loading="lazy"
-                  decoding="async"
-                  style={{
-                    objectPosition: project.coverPosition,
-                    objectFit: project.coverFit,
-                  }}
-                />
+                <picture>
+                  <source
+                    media="(max-width: 760px)"
+                    srcSet={mobileAssetUrl(coverImage)}
+                    type="image/webp"
+                  />
+                  <img
+                    src={assetUrl(coverImage)}
+                    alt={`${project.title} 项目封面`}
+                    loading={loadImmediately ? "eager" : "lazy"}
+                    decoding="async"
+                    fetchPriority={loadImmediately ? "auto" : "low"}
+                    style={{
+                      objectPosition: project.coverPosition,
+                      objectFit: project.coverFit,
+                    }}
+                  />
+                </picture>
               </span>
             </span>
             <span className="archive-meta-row">
@@ -374,16 +393,24 @@ function ProjectCard({
         ) : (
           <>
             <span className="project-media">
-              <img
-                src={assetUrl(coverOverride ?? project.images[0])}
-                alt={`${project.title} 项目封面`}
-                loading="lazy"
-                decoding="async"
-                style={{
-                  objectPosition: project.coverPosition,
-                  objectFit: project.coverFit,
-                }}
-              />
+              <picture>
+                <source
+                  media="(max-width: 760px)"
+                  srcSet={mobileAssetUrl(coverImage)}
+                  type="image/webp"
+                />
+                <img
+                  src={assetUrl(coverImage)}
+                  alt={`${project.title} 项目封面`}
+                  loading={loadImmediately ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchPriority={loadImmediately ? "auto" : "low"}
+                  style={{
+                    objectPosition: project.coverPosition,
+                    objectFit: project.coverFit,
+                  }}
+                />
+              </picture>
             </span>
             <span className="project-title-row">
               <span className="project-number">
@@ -518,9 +545,11 @@ export default function Home() {
 
   const scrollToWork = () => {
     window.requestAnimationFrame(() => {
-      document.getElementById("work")?.scrollIntoView({
-        behavior: window.matchMedia("(max-width: 760px)").matches ? "auto" : "smooth",
-        block: "start",
+      window.requestAnimationFrame(() => {
+        document.getElementById("work")?.scrollIntoView({
+          behavior: window.matchMedia("(max-width: 760px)").matches ? "auto" : "smooth",
+          block: "start",
+        });
       });
     });
   };
