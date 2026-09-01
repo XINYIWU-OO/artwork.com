@@ -16,10 +16,10 @@ const assetUrl = (path: string) =>
   `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${path}`;
 
 const homeHeroSlides = [
-  { image: homeHeroImages[0], title: "Paper Embers (for my grandpa)", year: "2023", projectId: "words-memory" },
-  { image: homeHeroImages[1], title: "Root Unbound", year: "2022", projectId: "the-branch" },
-  { image: homeHeroImages[2], title: "Post Viewing", year: "2023", projectId: "post-viewing" },
-  { image: homeHeroImages[3], title: "Respiration, Connection", year: "2022", projectId: "respiration-connection" },
+  { image: homeHeroImages[0], mobileImage: "/portfolio-v2/work-cover-p1-mobile.webp", title: "Paper Embers (for my grandpa)", year: "2023", projectId: "words-memory" },
+  { image: homeHeroImages[1], mobileImage: "/portfolio-v2/branch-01-mobile.webp", title: "Root Unbound", year: "2022", projectId: "the-branch" },
+  { image: homeHeroImages[2], mobileImage: "/portfolio-v2/post-viewing-001-mobile.webp", title: "Post Viewing", year: "2023", projectId: "post-viewing" },
+  { image: homeHeroImages[3], mobileImage: "/portfolio-v2/respiration-01-mobile.webp", title: "Respiration, Connection", year: "2022", projectId: "respiration-connection" },
 ];
 
 const homeHeroColumns = [
@@ -350,6 +350,8 @@ function ProjectCard({
                 <img
                   src={assetUrl(coverOverride ?? project.images[0])}
                   alt={`${project.title} 项目封面`}
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     objectPosition: project.coverPosition,
                     objectFit: project.coverFit,
@@ -375,6 +377,8 @@ function ProjectCard({
               <img
                 src={assetUrl(coverOverride ?? project.images[0])}
                 alt={`${project.title} 项目封面`}
+                loading="lazy"
+                decoding="async"
                 style={{
                   objectPosition: project.coverPosition,
                   objectFit: project.coverFit,
@@ -527,14 +531,18 @@ export default function Home() {
       <div
         className="drafting-paper-bg"
         style={{
-          backgroundImage: `url(${assetUrl("/backgrounds/red-drafting-grid.png")})`,
-        }}
+          "--drafting-bg": `url(${assetUrl("/backgrounds/red-drafting-grid.png")})`,
+          "--drafting-bg-mobile": `url(${assetUrl("/backgrounds/red-drafting-grid-mobile.webp")})`,
+        } as CSSProperties}
         aria-hidden="true"
       />
       <main
         id="top"
         className={activeSection === null ? "home-archive" : undefined}
-        style={({ "--drafting-bg": `url(${assetUrl("/backgrounds/red-drafting-grid.png")})` } as CSSProperties)}
+        style={({
+          "--drafting-bg": `url(${assetUrl("/backgrounds/red-drafting-grid.png")})`,
+          "--drafting-bg-mobile": `url(${assetUrl("/backgrounds/red-drafting-grid-mobile.webp")})`,
+        } as CSSProperties)}
       >
         <header className="site-header">
           <a className="wordmark" href="#top" onClick={resetWork} aria-label="返回首页">
@@ -602,13 +610,22 @@ export default function Home() {
                     >
                       <span className="home-split-media">
                         {slides.map((slide, index) => (
-                          <img
-                            className={index === activeIndex ? "is-active" : ""}
-                            src={assetUrl(slide.image)}
-                            alt=""
-                            aria-hidden={index !== activeIndex}
-                            key={slide.image}
-                          />
+                          <picture key={slide.image}>
+                            <source
+                              media="(max-width: 760px)"
+                              srcSet={assetUrl(slide.mobileImage)}
+                              type="image/webp"
+                            />
+                            <img
+                              className={index === activeIndex ? "is-active" : ""}
+                              src={assetUrl(slide.image)}
+                              alt=""
+                              aria-hidden={index !== activeIndex}
+                              loading={index === activeIndex ? "eager" : "lazy"}
+                              decoding="async"
+                              fetchPriority={index === activeIndex ? "high" : "low"}
+                            />
+                          </picture>
                         ))}
                       </span>
                       <span className="home-split-caption">

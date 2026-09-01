@@ -24,6 +24,7 @@ main { position: relative; z-index: 1; }
   position: fixed;
   inset: 0;
   z-index: 0;
+  background-image: var(--drafting-bg);
   background-position: center top;
   background-repeat: repeat-y;
   background-size: 107vw auto;
@@ -492,6 +493,11 @@ main:not(.home-archive) .filters {
   overflow: hidden;
   background: rgba(255, 255, 255, .72);
 }
+.home-split-media picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
 .home-split-media img {
   position: absolute;
   inset: 0;
@@ -944,9 +950,16 @@ main:not(.home-archive) .filters {
   .home-split-panel:first-child::after { right: -5.5px; }
   .home-split-media { height: min(48svh, 390px); }
   .drafting-paper-bg {
+    background-image: var(--drafting-bg-mobile);
     background-position: center top;
     background-size: 107vw auto;
     opacity: .72;
+  }
+  .home-archive .site-header,
+  .home-archive .filters,
+  main:not(.home-archive) .site-header,
+  main:not(.home-archive) .filters {
+    background-image: var(--drafting-bg-mobile);
   }
   .project-flow--desktop { display: none; }
   .project-flow--mobile { display: grid; }
