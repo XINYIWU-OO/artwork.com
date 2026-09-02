@@ -1,2 +1,3 @@
-:HL["/artwork.com/_next/static/css/da00f1985f1f82f8.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"aIBTgNVx9x4cHj6lizPsC"}
+:HL["/artwork.com/_next/static/css/ec7067e590774f36.css","style"]
+:HL["/artwork.com/_next/static/css/3381b41d98216dac.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"xg_56AqbDsKi6L2INzYrh"}
