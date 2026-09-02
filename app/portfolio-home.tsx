@@ -38,11 +38,8 @@ const homeHeroColumns = [
   homeHeroSlides.filter((_, index) => index % 2 === 1),
 ];
 
-const mobileArchiveCoverImages = projects.map((project) =>
-  project.id === "post-viewing"
-    ? "/portfolio-v2/post-viewing-03-mobile.webp"
-    : mobileAssetUrl(project.images[0]),
-);
+const mobileArchiveCoverSprite = assetUrl("/portfolio-v2/all-covers-mobile.webp");
+const mobileArchiveCoverCount = 21;
 
 function DiamondCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -364,11 +361,13 @@ function ProjectCard({
   const archiveNumber = String(index + 1).padStart(3, "0");
   const coverImage = coverOverride ?? project.images[0];
   const loadImmediately = eager || index < 3;
-  const mobileCoverImage = mobileCoverOverride
-    ? mobileCoverOverride.endsWith(".webp")
-      ? assetUrl(mobileCoverOverride)
-      : mobileAssetUrl(mobileCoverOverride)
-    : mobileAssetUrl(coverImage);
+  const mobileCoverImage = archive
+    ? mobileArchiveCoverSprite
+    : mobileCoverOverride
+      ? mobileCoverOverride.endsWith(".webp")
+        ? assetUrl(mobileCoverOverride)
+        : mobileAssetUrl(mobileCoverOverride)
+      : mobileAssetUrl(coverImage);
   const mobileCoverType = mobileCoverImage.endsWith(".webp")
     ? "image/webp"
     : undefined;
@@ -399,15 +398,17 @@ function ProjectCard({
                     type={mobileCoverType}
                   />
                   <img
+                    className="archive-cover-image"
                     src={assetUrl(coverImage)}
                     alt={`${project.title} 项目封面`}
                     loading={loadImmediately ? "eager" : "lazy"}
                     decoding="async"
                     fetchPriority={loadImmediately ? "auto" : "low"}
                     style={{
+                      "--archive-sprite-y": `${(index / (mobileArchiveCoverCount - 1)) * 100}%`,
                       objectPosition: project.coverPosition,
                       objectFit: project.coverFit,
-                    }}
+                    } as CSSProperties}
                   />
                 </picture>
               </span>
@@ -614,16 +615,15 @@ export default function Home({
 
   return (
     <>
-      {activeSection === null && mobileArchiveCoverImages.map((image, index) => (
+      {activeSection === null && (
         <link
           rel="preload"
           as="image"
-          href={image.startsWith(process.env.NEXT_PUBLIC_BASE_PATH ?? "") ? image : assetUrl(image)}
+          href={mobileArchiveCoverSprite}
           media="(max-width: 760px)"
-          fetchPriority={index < 4 ? "high" : "low"}
-          key={image}
+          fetchPriority="high"
         />
-      ))}
+      )}
       <DiamondCursor />
       <div
         className="drafting-paper-bg"

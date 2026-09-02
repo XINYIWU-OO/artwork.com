@@ -1145,6 +1145,10 @@ main:not(.home-archive) .filters {
   .project-flow--mobile { display: grid; }
   .projects-grid { grid-template-columns: 1fr; gap: 42px; }
   .projects-grid--archive { grid-template-columns: 1fr; }
+  .project-trigger--archive .archive-cover-image {
+    object-fit: cover !important;
+    object-position: center var(--archive-sprite-y) !important;
+  }
   .project-title-row { grid-template-columns: 28px 1fr auto; gap: 10px; }
   .project-title-copy strong { font-size: 27px; }
   .project-trigger { min-height: 44px; }
