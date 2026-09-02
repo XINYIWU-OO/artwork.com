@@ -226,8 +226,7 @@ img { display: block; width: 100%; }
 }
 .site-header nav a { border-bottom: 1px solid transparent; }
 .site-header nav a:hover { border-color: currentColor; }
-.mobile-menu-toggle,
-.mobile-nav-panel,
+.mobile-nav-shell,
 .home-mobile-hero {
   display: none;
 }
@@ -945,6 +944,12 @@ main:not(.home-archive) .filters {
   }
   .wordmark { font-size: 12px; }
   .site-header nav { display: none; }
+  .mobile-nav-shell {
+    position: relative;
+    z-index: 64;
+    display: block;
+    margin-left: auto;
+  }
   .mobile-menu-toggle {
     position: relative;
     z-index: 64;
@@ -958,7 +963,10 @@ main:not(.home-archive) .filters {
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    list-style: none;
   }
+  .mobile-menu-toggle::-webkit-details-marker { display: none; }
+  .mobile-menu-toggle::marker { content: ""; }
   .mobile-menu-toggle span {
     display: block;
     width: 100%;
@@ -967,9 +975,9 @@ main:not(.home-archive) .filters {
     transform-origin: center;
     transition: transform .2s ease, opacity .2s ease;
   }
-  .mobile-menu-toggle.is-open span:first-child { transform: translateY(6px) rotate(45deg); }
-  .mobile-menu-toggle.is-open span:nth-child(2) { opacity: 0; }
-  .mobile-menu-toggle.is-open span:last-child { transform: translateY(-6px) rotate(-45deg); }
+  .mobile-nav-shell[open] .mobile-menu-toggle span:first-child { transform: translateY(6px) rotate(45deg); }
+  .mobile-nav-shell[open] .mobile-menu-toggle span:nth-child(2) { opacity: 0; }
+  .mobile-nav-shell[open] .mobile-menu-toggle span:last-child { transform: translateY(-6px) rotate(-45deg); }
   .filters--desktop { display: none !important; }
   .mobile-nav-panel {
     position: fixed;
@@ -977,9 +985,8 @@ main:not(.home-archive) .filters {
     right: 0;
     left: 0;
     z-index: 63;
-    display: grid;
+    display: none !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-height: 0;
     overflow: hidden;
     border-top: 1px solid rgba(31, 28, 26, .72);
     background-color: #fffdfa;
@@ -987,16 +994,11 @@ main:not(.home-archive) .filters {
     background-position: center top;
     background-repeat: repeat-y;
     background-size: 107vw auto;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-8px);
-    transition: max-height .24s ease, opacity .18s ease, transform .24s ease;
-  }
-  .mobile-nav-panel.is-open {
-    max-height: 330px;
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(0);
+  }
+  .mobile-nav-shell[open] .mobile-nav-panel {
+    display: grid !important;
   }
   .mobile-nav-panel button {
     min-width: 0;

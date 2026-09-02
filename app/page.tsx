@@ -449,8 +449,8 @@ export default function Home() {
     useState<PortfolioSection | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const mobileMenuRef = useRef<HTMLDetailsElement>(null);
   const activeHeroImages =
     activeSection === "exhibition" ? exhibitionHeroImages : homeHeroImages;
   const mobileHeroSlide = homeHeroSlides[heroIndex % homeHeroSlides.length];
@@ -487,24 +487,13 @@ export default function Home() {
     const mobileQuery = window.matchMedia("(max-width: 760px)");
     const syncMobileViewport = () => {
       setIsMobileViewport(mobileQuery.matches);
-      if (!mobileQuery.matches) setMobileMenuOpen(false);
+      if (!mobileQuery.matches) mobileMenuRef.current?.removeAttribute("open");
     };
 
     syncMobileViewport();
     mobileQuery.addEventListener("change", syncMobileViewport);
     return () => mobileQuery.removeEventListener("change", syncMobileViewport);
   }, []);
-
-  useEffect(() => {
-    if (!mobileMenuOpen) return;
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobileMenuOpen(false);
-    };
-
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -577,7 +566,7 @@ export default function Home() {
   const resetWork = () => {
     setActiveSection(null);
     setSelectedProjectId(null);
-    setMobileMenuOpen(false);
+    mobileMenuRef.current?.removeAttribute("open");
   };
 
   const scrollToWork = () => {
@@ -617,55 +606,52 @@ export default function Home() {
           <nav aria-label="主导航">
             <a href="#work" onClick={resetWork}>WORK</a>
           </nav>
-          <button
-            className={`mobile-menu-toggle${mobileMenuOpen ? " is-open" : ""}`}
-            type="button"
-            aria-label={mobileMenuOpen ? "关闭导航" : "打开导航"}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="mobile-navigation"
-            onClick={() => setMobileMenuOpen((open) => !open)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-        </header>
-
-        <nav
-          className={`mobile-nav-panel${mobileMenuOpen ? " is-open" : ""}`}
-          id="mobile-navigation"
-          aria-label="手机端作品分类导航"
-          aria-hidden={!mobileMenuOpen}
-          inert={!mobileMenuOpen ? true : undefined}
-        >
-          <button
-            className={activeSection === null ? "is-active" : ""}
-            type="button"
-            onClick={() => {
-              setActiveSection(null);
-              setSelectedProjectId(null);
-              setMobileMenuOpen(false);
-              window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
-            }}
-          >
-            ALL
-          </button>
-          {sections.map((section) => (
-            <button
-              className={activeSection === section.id ? "is-active" : ""}
-              type="button"
-              key={`mobile-${section.id}`}
-              onClick={() => {
-                setActiveSection(section.id);
-                setSelectedProjectId(null);
-                setMobileMenuOpen(false);
-                scrollToWork();
-              }}
+          <details className="mobile-nav-shell" ref={mobileMenuRef}>
+            <summary
+              className="mobile-menu-toggle"
+              aria-label="打开或关闭导航"
+              aria-controls="mobile-navigation"
             >
-              {section.label}
-            </button>
-          ))}
-        </nav>
+              <span />
+              <span />
+              <span />
+            </summary>
+
+            <nav
+              className="mobile-nav-panel"
+              id="mobile-navigation"
+              aria-label="手机端作品分类导航"
+            >
+              <button
+                className={activeSection === null ? "is-active" : ""}
+                type="button"
+                onClick={() => {
+                  setActiveSection(null);
+                  setSelectedProjectId(null);
+                  mobileMenuRef.current?.removeAttribute("open");
+                  window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+                }}
+              >
+                ALL
+              </button>
+              {sections.map((section) => (
+                <button
+                  className={activeSection === section.id ? "is-active" : ""}
+                  type="button"
+                  key={`mobile-${section.id}`}
+                  onClick={() => {
+                    setActiveSection(section.id);
+                    setSelectedProjectId(null);
+                    mobileMenuRef.current?.removeAttribute("open");
+                    scrollToWork();
+                  }}
+                >
+                  {section.label}
+                </button>
+              ))}
+            </nav>
+          </details>
+        </header>
 
         <div className="filters filters--desktop" role="group" aria-label="按文件夹分类筛选作品">
           <button
@@ -891,7 +877,7 @@ export default function Home() {
                         }
                         mobileCoverOverride={
                           activeSection === null && project.id === "post-viewing"
-                            ? project.images[2]
+                            ? "/portfolio-v2/post-viewing-03-mobile.webp"
                             : undefined
                         }
                         onOpen={() => setSelectedProjectId(project.id)}
