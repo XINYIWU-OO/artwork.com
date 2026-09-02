@@ -1000,10 +1000,12 @@ main:not(.home-archive) .filters {
   .mobile-nav-shell[open] .mobile-nav-panel {
     display: grid !important;
   }
-  .mobile-nav-panel button {
+  .mobile-nav-panel a {
+    display: grid;
     min-width: 0;
     min-height: 54px;
     padding: 0 12px;
+    place-items: center;
     border-right: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
     background: rgba(255, 253, 250, .22);
@@ -1015,9 +1017,9 @@ main:not(.home-archive) .filters {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
-  .mobile-nav-panel button:nth-child(even) { border-right: 0; }
-  .mobile-nav-panel button.is-active { color: var(--ui-green); }
-  .mobile-nav-panel button:active { background: rgba(223, 255, 69, .28); }
+  .mobile-nav-panel a:nth-child(even) { border-right: 0; }
+  .mobile-nav-panel a.is-active { color: var(--ui-green); }
+  .mobile-nav-panel a:active { background: rgba(223, 255, 69, .28); }
   .hero-interface { right: 18px; bottom: 18px; left: 18px; }
   .hero-images[data-count="4"] img {
     opacity: 0;
