@@ -389,6 +389,27 @@ main:not(.home-archive) .filters {
   opacity: 1;
   transform: scale(1);
 }
+.digital-work:not(.is-hydrated) .digital-frame img {
+  opacity: 0;
+  animation-duration: var(--digital-cycle);
+  animation-delay: var(--digital-delay);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.digital-work:not(.is-hydrated) .digital-frames[data-count="4"] .digital-frame img {
+  animation-name: digital-fallback-four;
+}
+.digital-work:not(.is-hydrated) .digital-frames[data-count="13"] .digital-frame img {
+  animation-name: digital-fallback-thirteen;
+}
+@keyframes digital-fallback-four {
+  0%, 24% { opacity: 1; }
+  25%, 100% { opacity: 0; }
+}
+@keyframes digital-fallback-thirteen {
+  0%, 7.4% { opacity: 1; }
+  7.7%, 100% { opacity: 0; }
+}
 .digital-shade {
   position: absolute;
   inset: 56% 0 0;
@@ -1079,6 +1100,16 @@ main:not(.home-archive) .filters {
     width: 100%;
     height: 100%;
   }
+  .home-mobile-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity .45s ease;
+  }
+  .home-mobile-hero.is-hydrated .home-mobile-slide.is-active { opacity: 1; }
+  .home-mobile-hero:not(.is-hydrated) .home-mobile-slide {
+    animation: home-mobile-fallback-cycle 11.2s linear var(--home-slide-delay) infinite;
+  }
   .home-mobile-media img {
     object-fit: contain;
     object-position: center;
@@ -1185,6 +1216,11 @@ main:not(.home-archive) .filters {
   .viewer-caption h2 { font-size: clamp(23px, 7vw, 36px); }
   .viewer-close { top: 14px; right: 12px; }
   .viewer-controls { right: 14px; bottom: 15px; }
+}
+
+@keyframes home-mobile-fallback-cycle {
+  0%, 24% { opacity: 1; }
+  25%, 100% { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

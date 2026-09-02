@@ -261,6 +261,11 @@ function DigitalSequence({
   const sectionRef = useRef<HTMLElement>(null);
   const [frameIndex, setFrameIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -276,22 +281,25 @@ function DigitalSequence({
   }, []);
 
   useEffect(() => {
-    if (!isVisible || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
-
     const timer = window.setInterval(() => {
       setFrameIndex((current) => (current + 1) % work.frames.length);
     }, work.frameInterval);
 
     return () => window.clearInterval(timer);
-  }, [isVisible, work.frameInterval, work.frames.length]);
+  }, [work.frameInterval, work.frames.length]);
 
   return (
-    <article className="digital-work" ref={sectionRef} aria-label={`${work.title} 动画作品`}>
-      <div className="digital-frames">
+    <article className={`digital-work${isHydrated ? " is-hydrated" : ""}`} ref={sectionRef} aria-label={`${work.title} 动画作品`}>
+      <div className="digital-frames" data-count={work.frames.length}>
         {work.frames.map((frame, currentIndex) => (
-          <picture key={frame}>
+          <picture
+            className="digital-frame"
+            key={frame}
+            style={{
+              "--digital-delay": `${currentIndex * work.frameInterval}ms`,
+              "--digital-cycle": `${work.frames.length * work.frameInterval}ms`,
+            } as CSSProperties}
+          >
             <source
               media="(max-width: 760px)"
               srcSet={mobileAssetUrl(frame)}
@@ -479,10 +487,15 @@ export default function Home({
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const mobileMenuRef = useRef<HTMLDetailsElement>(null);
   const activeHeroImages =
     activeSection === "exhibition" ? exhibitionHeroImages : homeHeroImages;
   const mobileHeroSlide = homeHeroSlides[heroIndex % homeHeroSlides.length];
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     // Category routes intentionally open at #work. Only the ALL landing page
@@ -531,7 +544,7 @@ export default function Home({
   useEffect(() => {
     const timer = window.setInterval(() => {
       setHeroIndex((current) => (current + 1) % activeHeroImages.length);
-    }, 4200);
+    }, 2800);
 
     return () => window.clearInterval(timer);
   }, [activeHeroImages.length]);
@@ -769,7 +782,7 @@ export default function Home({
                   })}
                 </section>
 
-                <section className="home-mobile-hero" aria-label="手机版首页作品封面轮播">
+                <section className={`home-mobile-hero${isHydrated ? " is-hydrated" : ""}`} aria-label="手机版首页作品封面轮播">
                   <div className="home-mobile-frame">
                     <button
                       className="home-mobile-project"
@@ -778,16 +791,23 @@ export default function Home({
                       aria-label={`打开 ${mobileHeroSlide.title} 项目`}
                     >
                       <span className="home-mobile-media">
-                        <picture>
-                          <source srcSet={assetUrl(mobileHeroSlide.mobileImage)} type="image/webp" />
-                          <img
-                            src={assetUrl(mobileHeroSlide.image)}
-                            alt={`${mobileHeroSlide.title} 项目封面`}
-                            loading="eager"
-                            decoding="async"
-                            fetchPriority="high"
-                          />
-                        </picture>
+                        {homeHeroSlides.map((slide, index) => (
+                          <picture
+                            className={`home-mobile-slide${heroIndex % homeHeroSlides.length === index ? " is-active" : ""}`}
+                            key={slide.image}
+                            style={{ "--home-slide-delay": `${index * 2.8}s` } as CSSProperties}
+                          >
+                            <source srcSet={assetUrl(slide.mobileImage)} type="image/webp" />
+                            <img
+                              src={assetUrl(slide.image)}
+                              alt={index === heroIndex % homeHeroSlides.length ? `${slide.title} 项目封面` : ""}
+                              aria-hidden={index !== heroIndex % homeHeroSlides.length}
+                              loading="eager"
+                              decoding="async"
+                              fetchPriority={index === 0 ? "high" : "low"}
+                            />
+                          </picture>
+                        ))}
                       </span>
                     </button>
                     <button
