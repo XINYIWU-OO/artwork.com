@@ -327,6 +327,8 @@ function ProjectCard({
   isClone = false,
   archive = false,
   coverOverride,
+  mobileCoverOverride,
+  eager = false,
 }: {
   project: Project;
   index: number;
@@ -334,10 +336,18 @@ function ProjectCard({
   isClone?: boolean;
   archive?: boolean;
   coverOverride?: string;
+  mobileCoverOverride?: string;
+  eager?: boolean;
 }) {
   const archiveNumber = String(index + 1).padStart(3, "0");
   const coverImage = coverOverride ?? project.images[0];
-  const loadImmediately = index < 3;
+  const loadImmediately = eager || index < 3;
+  const mobileCoverImage = mobileCoverOverride
+    ? assetUrl(mobileCoverOverride)
+    : mobileAssetUrl(coverImage);
+  const mobileCoverType = mobileCoverImage.endsWith(".webp")
+    ? "image/webp"
+    : undefined;
 
   return (
     <article className="project-card" aria-hidden={isClone || undefined}>
@@ -361,8 +371,8 @@ function ProjectCard({
                 <picture>
                   <source
                     media="(max-width: 760px)"
-                    srcSet={mobileAssetUrl(coverImage)}
-                    type="image/webp"
+                    srcSet={mobileCoverImage}
+                    type={mobileCoverType}
                   />
                   <img
                     src={assetUrl(coverImage)}
@@ -394,11 +404,11 @@ function ProjectCard({
           <>
             <span className="project-media">
               <picture>
-                <source
-                  media="(max-width: 760px)"
-                  srcSet={mobileAssetUrl(coverImage)}
-                  type="image/webp"
-                />
+                  <source
+                    media="(max-width: 760px)"
+                    srcSet={mobileCoverImage}
+                    type={mobileCoverType}
+                  />
                 <img
                   src={assetUrl(coverImage)}
                   alt={`${project.title} 项目封面`}
@@ -439,8 +449,11 @@ export default function Home() {
     useState<PortfolioSection | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const activeHeroImages =
     activeSection === "exhibition" ? exhibitionHeroImages : homeHeroImages;
+  const mobileHeroSlide = homeHeroSlides[heroIndex % homeHeroSlides.length];
 
   useEffect(() => {
     const previousScrollRestoration = window.history.scrollRestoration;
@@ -469,6 +482,29 @@ export default function Home() {
   useEffect(() => {
     setHeroIndex(0);
   }, [activeSection]);
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia("(max-width: 760px)");
+    const syncMobileViewport = () => {
+      setIsMobileViewport(mobileQuery.matches);
+      if (!mobileQuery.matches) setMobileMenuOpen(false);
+    };
+
+    syncMobileViewport();
+    mobileQuery.addEventListener("change", syncMobileViewport);
+    return () => mobileQuery.removeEventListener("change", syncMobileViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -541,6 +577,7 @@ export default function Home() {
   const resetWork = () => {
     setActiveSection(null);
     setSelectedProjectId(null);
+    setMobileMenuOpen(false);
   };
 
   const scrollToWork = () => {
@@ -580,9 +617,57 @@ export default function Home() {
           <nav aria-label="主导航">
             <a href="#work" onClick={resetWork}>WORK</a>
           </nav>
+          <button
+            className={`mobile-menu-toggle${mobileMenuOpen ? " is-open" : ""}`}
+            type="button"
+            aria-label={mobileMenuOpen ? "关闭导航" : "打开导航"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
         </header>
 
-        <div className="filters" role="group" aria-label="按文件夹分类筛选作品">
+        <nav
+          className={`mobile-nav-panel${mobileMenuOpen ? " is-open" : ""}`}
+          id="mobile-navigation"
+          aria-label="手机端作品分类导航"
+          aria-hidden={!mobileMenuOpen}
+          inert={!mobileMenuOpen ? true : undefined}
+        >
+          <button
+            className={activeSection === null ? "is-active" : ""}
+            type="button"
+            onClick={() => {
+              setActiveSection(null);
+              setSelectedProjectId(null);
+              setMobileMenuOpen(false);
+              window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+            }}
+          >
+            ALL
+          </button>
+          {sections.map((section) => (
+            <button
+              className={activeSection === section.id ? "is-active" : ""}
+              type="button"
+              key={`mobile-${section.id}`}
+              onClick={() => {
+                setActiveSection(section.id);
+                setSelectedProjectId(null);
+                setMobileMenuOpen(false);
+                scrollToWork();
+              }}
+            >
+              {section.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="filters filters--desktop" role="group" aria-label="按文件夹分类筛选作品">
           <button
             className={activeSection === null ? "is-active" : ""}
             aria-pressed={activeSection === null}
@@ -622,50 +707,100 @@ export default function Home() {
         ) : (
           <>
             {activeSection === null ? (
-              <section className="home-split-hero" aria-label="首页作品图像轮播">
-                {homeHeroColumns.map((slides, columnIndex) => {
-                  const activeIndex = columnIndex === 0
-                    ? Math.floor((heroIndex + 1) / 2) % slides.length
-                    : Math.floor(heroIndex / 2) % slides.length;
-                  const activeSlide = slides[activeIndex];
+              <>
+                <section className="home-split-hero" aria-label="首页作品图像轮播">
+                  {homeHeroColumns.map((slides, columnIndex) => {
+                    const activeIndex = columnIndex === 0
+                      ? Math.floor((heroIndex + 1) / 2) % slides.length
+                      : Math.floor(heroIndex / 2) % slides.length;
+                    const activeSlide = slides[activeIndex];
 
-                  return (
+                    return (
+                      <button
+                        className="home-split-panel"
+                        type="button"
+                        onClick={() => setSelectedProjectId(activeSlide.projectId)}
+                        aria-label={`打开 ${activeSlide.title} 项目`}
+                        key={columnIndex}
+                      >
+                        <span className="home-split-media">
+                          {slides.map((slide, index) => (
+                            <picture key={slide.image}>
+                              <source
+                                media="(max-width: 760px)"
+                                srcSet={assetUrl(slide.mobileImage)}
+                                type="image/webp"
+                              />
+                              <img
+                                className={index === activeIndex ? "is-active" : ""}
+                                src={assetUrl(slide.image)}
+                                alt=""
+                                aria-hidden={index !== activeIndex}
+                                loading={index === activeIndex ? "eager" : "lazy"}
+                                decoding="async"
+                                fetchPriority={index === activeIndex ? "high" : "low"}
+                              />
+                            </picture>
+                          ))}
+                        </span>
+                        <span className="home-split-caption">
+                          <span>{String(columnIndex + 1).padStart(3, "0")}</span>
+                          <strong>{activeSlide.title}</strong>
+                          <span>{activeSlide.year}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </section>
+
+                <section className="home-mobile-hero" aria-label="手机版首页作品封面轮播">
+                  <div className="home-mobile-frame">
                     <button
-                      className="home-split-panel"
+                      className="home-mobile-project"
                       type="button"
-                      onClick={() => setSelectedProjectId(activeSlide.projectId)}
-                      aria-label={`打开 ${activeSlide.title} 项目`}
-                      key={columnIndex}
+                      onClick={() => setSelectedProjectId(mobileHeroSlide.projectId)}
+                      aria-label={`打开 ${mobileHeroSlide.title} 项目`}
                     >
-                      <span className="home-split-media">
-                        {slides.map((slide, index) => (
-                          <picture key={slide.image}>
-                            <source
-                              media="(max-width: 760px)"
-                              srcSet={assetUrl(slide.mobileImage)}
-                              type="image/webp"
-                            />
-                            <img
-                              className={index === activeIndex ? "is-active" : ""}
-                              src={assetUrl(slide.image)}
-                              alt=""
-                              aria-hidden={index !== activeIndex}
-                              loading={index === activeIndex ? "eager" : "lazy"}
-                              decoding="async"
-                              fetchPriority={index === activeIndex ? "high" : "low"}
-                            />
-                          </picture>
-                        ))}
-                      </span>
-                      <span className="home-split-caption">
-                        <span>{String(columnIndex + 1).padStart(3, "0")}</span>
-                        <strong>{activeSlide.title}</strong>
-                        <span>{activeSlide.year}</span>
+                      <span className="home-mobile-media">
+                        <picture>
+                          <source srcSet={assetUrl(mobileHeroSlide.mobileImage)} type="image/webp" />
+                          <img
+                            src={assetUrl(mobileHeroSlide.image)}
+                            alt={`${mobileHeroSlide.title} 项目封面`}
+                            loading="eager"
+                            decoding="async"
+                            fetchPriority="high"
+                          />
+                        </picture>
                       </span>
                     </button>
-                  );
-                })}
-              </section>
+                    <button
+                      className="home-mobile-arrow home-mobile-arrow--previous"
+                      type="button"
+                      aria-label="上一张封面"
+                      onClick={() => setHeroIndex((current) => (current - 1 + homeHeroSlides.length) % homeHeroSlides.length)}
+                    >
+                      ←
+                    </button>
+                    <button
+                      className="home-mobile-arrow home-mobile-arrow--next"
+                      type="button"
+                      aria-label="下一张封面"
+                      onClick={() => setHeroIndex((current) => (current + 1) % homeHeroSlides.length)}
+                    >
+                      →
+                    </button>
+                  </div>
+                  <div className="home-mobile-caption">
+                    <span>{String(heroIndex % homeHeroSlides.length + 1).padStart(3, "0")}</span>
+                    <strong>{mobileHeroSlide.title}</strong>
+                    <span>{mobileHeroSlide.year}</span>
+                  </div>
+                  <div className="home-mobile-pagination">
+                    {String(heroIndex % homeHeroSlides.length + 1).padStart(2, "0")} / {String(homeHeroSlides.length).padStart(2, "0")}
+                  </div>
+                </section>
+              </>
             ) : (
               <section className="hero" aria-label="作品图像流">
                 <div className="hero-images" data-count={activeHeroImages.length}>
@@ -726,6 +861,7 @@ export default function Home() {
                           project={project}
                           index={index}
                           archive={activeSection === null}
+                          eager={isMobileViewport}
                           onOpen={() => setSelectedProjectId(project.id)}
                           key={project.id}
                         />
@@ -747,7 +883,13 @@ export default function Home() {
                         project={project}
                         index={index}
                         archive={activeSection === null}
+                        eager={isMobileViewport}
                         coverOverride={
+                          activeSection === null && project.id === "post-viewing"
+                            ? project.images[2]
+                            : undefined
+                        }
+                        mobileCoverOverride={
                           activeSection === null && project.id === "post-viewing"
                             ? project.images[2]
                             : undefined
