@@ -21,7 +21,9 @@ const mobileAssetUrl = (path: string) => {
     ? `${path}-mobile.webp`
     : `${path.slice(0, extensionIndex)}-mobile.webp`;
 
-  return assetUrl(mobilePath);
+  // Spaces are separators inside srcset, so encode them before the URL is
+  // assigned to a <source>. Plain img src values do not have this ambiguity.
+  return assetUrl(mobilePath.replaceAll(" ", "%20"));
 };
 
 const homeHeroSlides = [
@@ -203,12 +205,19 @@ function ProjectViewer({
       aria-modal="true"
       aria-label={`${project.title} 项目图片与说明`}
     >
-      <img
-        className="viewer-image"
-        key={`${project.id}-${slideIndex}`}
-        src={assetUrl(project.images[slideIndex])}
-        alt={`${project.title} 项目图片 ${slideIndex + 1}`}
-      />
+      <picture className="viewer-picture" key={`${project.id}-${slideIndex}`}>
+        <source
+          media="(max-width: 760px)"
+          srcSet={mobileAssetUrl(project.images[slideIndex])}
+          type="image/webp"
+        />
+        <img
+          className="viewer-image"
+          src={assetUrl(project.images[slideIndex])}
+          alt={`${project.title} 项目图片 ${slideIndex + 1}`}
+          decoding="async"
+        />
+      </picture>
       <div className="viewer-shade" aria-hidden="true" />
 
       <button
@@ -285,13 +294,20 @@ function DigitalSequence({
     <article className="digital-work" ref={sectionRef} aria-label={`${work.title} 动画作品`}>
       <div className="digital-frames">
         {work.frames.map((frame, currentIndex) => (
-          <img
-            className={currentIndex === frameIndex ? "is-active" : ""}
-            key={frame}
-            src={assetUrl(frame)}
-            alt={currentIndex === frameIndex ? `${work.title} 动画画面` : ""}
-            aria-hidden={currentIndex !== frameIndex}
-          />
+          <picture key={frame}>
+            <source
+              media="(max-width: 760px)"
+              srcSet={mobileAssetUrl(frame)}
+              type="image/webp"
+            />
+            <img
+              className={currentIndex === frameIndex ? "is-active" : ""}
+              src={assetUrl(frame)}
+              alt={currentIndex === frameIndex ? `${work.title} 动画画面` : ""}
+              aria-hidden={currentIndex !== frameIndex}
+              decoding="async"
+            />
+          </picture>
         ))}
       </div>
       <div className="digital-shade" aria-hidden="true" />
@@ -349,7 +365,9 @@ function ProjectCard({
   const coverImage = coverOverride ?? project.images[0];
   const loadImmediately = eager || index < 3;
   const mobileCoverImage = mobileCoverOverride
-    ? assetUrl(mobileCoverOverride)
+    ? mobileCoverOverride.endsWith(".webp")
+      ? assetUrl(mobileCoverOverride)
+      : mobileAssetUrl(mobileCoverOverride)
     : mobileAssetUrl(coverImage);
   const mobileCoverType = mobileCoverImage.endsWith(".webp")
     ? "image/webp"
@@ -466,6 +484,10 @@ export default function Home({
   const mobileHeroSlide = homeHeroSlides[heroIndex % homeHeroSlides.length];
 
   useEffect(() => {
+    // Category routes intentionally open at #work. Only the ALL landing page
+    // should be forced to the top of its cover carousel.
+    if (initialSection !== null) return;
+
     const previousScrollRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";
 
@@ -487,7 +509,7 @@ export default function Home({
       window.clearTimeout(timer);
       window.history.scrollRestoration = previousScrollRestoration;
     };
-  }, []);
+  }, [initialSection]);
 
   useEffect(() => {
     setHeroIndex(0);
@@ -799,14 +821,22 @@ export default function Home({
               <section className="hero" aria-label="作品图像流">
                 <div className="hero-images" data-count={activeHeroImages.length}>
                   {activeHeroImages.map((image, index) => (
-                    <img
-                      className={heroIndex === index ? "is-active" : ""}
-                      key={image}
-                      src={assetUrl(image)}
-                      alt=""
-                      aria-hidden={heroIndex !== index}
-                      style={{ "--hero-delay": `${index * 4.2}s` } as CSSProperties}
-                    />
+                    <picture key={image}>
+                      <source
+                        media="(max-width: 760px)"
+                        srcSet={mobileAssetUrl(image)}
+                        type="image/webp"
+                      />
+                      <img
+                        className={heroIndex === index ? "is-active" : ""}
+                        src={assetUrl(image)}
+                        alt=""
+                        aria-hidden={heroIndex !== index}
+                        decoding="async"
+                        fetchPriority={index === 0 ? "high" : "low"}
+                        style={{ "--hero-delay": `${index * 4.2}s` } as CSSProperties}
+                      />
+                    </picture>
                   ))}
                 </div>
                 <div className="hero-interface">
