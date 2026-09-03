@@ -40,6 +40,8 @@ const homeHeroColumns = [
 
 const mobileArchiveCoverSprite = assetUrl("/portfolio-v2/all-covers-mobile.webp");
 const mobileArchiveCoverCount = 21;
+const transparentPixel =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
 function DiamondCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -399,11 +401,19 @@ function ProjectCard({
                 <i />
               </span>
               <span className="project-media">
-                <picture>
+                <span
+                  className="archive-mobile-cover"
+                  aria-hidden="true"
+                  style={{
+                    "--archive-sprite-y": `${(index / (mobileArchiveCoverCount - 1)) * 100}%`,
+                    backgroundImage: `url(${mobileArchiveCoverSprite})`,
+                  } as CSSProperties}
+                />
+                <picture className="archive-desktop-cover">
                   <source
                     media="(max-width: 760px)"
-                    srcSet={mobileCoverImage}
-                    type={mobileCoverType}
+                    srcSet={transparentPixel}
+                    type="image/gif"
                   />
                   <img
                     className="archive-cover-image"
@@ -487,15 +497,10 @@ export default function Home({
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
   const mobileMenuRef = useRef<HTMLDetailsElement>(null);
   const activeHeroImages =
     activeSection === "exhibition" ? exhibitionHeroImages : homeHeroImages;
   const mobileHeroSlide = homeHeroSlides[heroIndex % homeHeroSlides.length];
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   useEffect(() => {
     // Category routes intentionally open at #work. Only the ALL landing page
@@ -782,7 +787,7 @@ export default function Home({
                   })}
                 </section>
 
-                <section className={`home-mobile-hero${isHydrated ? " is-hydrated" : ""}`} aria-label="手机版首页作品封面轮播">
+                <section className="home-mobile-hero" aria-label="手机版首页作品封面轮播">
                   <div className="home-mobile-frame">
                     <button
                       className="home-mobile-project"
@@ -791,23 +796,16 @@ export default function Home({
                       aria-label={`打开 ${mobileHeroSlide.title} 项目`}
                     >
                       <span className="home-mobile-media">
-                        {homeHeroSlides.map((slide, index) => (
-                          <picture
-                            className={`home-mobile-slide${heroIndex % homeHeroSlides.length === index ? " is-active" : ""}`}
-                            key={slide.image}
-                            style={{ "--home-slide-delay": `${index * 2.8}s` } as CSSProperties}
-                          >
-                            <source srcSet={assetUrl(slide.mobileImage)} type="image/webp" />
-                            <img
-                              src={assetUrl(slide.image)}
-                              alt={index === heroIndex % homeHeroSlides.length ? `${slide.title} 项目封面` : ""}
-                              aria-hidden={index !== heroIndex % homeHeroSlides.length}
-                              loading="eager"
-                              decoding="async"
-                              fetchPriority={index === 0 ? "high" : "low"}
-                            />
-                          </picture>
-                        ))}
+                        <picture>
+                          <source srcSet={assetUrl(mobileHeroSlide.mobileImage)} type="image/webp" />
+                          <img
+                            src={assetUrl(mobileHeroSlide.image)}
+                            alt={`${mobileHeroSlide.title} 项目封面`}
+                            loading="eager"
+                            decoding="async"
+                            fetchPriority="high"
+                          />
+                        </picture>
                       </span>
                     </button>
                     <button
